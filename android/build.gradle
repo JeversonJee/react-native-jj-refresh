@@ -1,36 +1,74 @@
-
 buildscript {
-    repositories {
-        jcenter()
-    }
+  repositories {
+    google()
+    mavenCentral()
+  }
 
-    dependencies {
-        classpath 'com.android.tools.build:gradle:1.3.1'
-    }
+  dependencies {
+    classpath "com.android.tools.build:gradle:7.2.1"
+  }
 }
 
-apply plugin: 'com.android.library'
+def isNewArchitectureEnabled() {
+  return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
+}
+
+apply plugin: "com.android.library"
+
+if (isNewArchitectureEnabled()) {
+  apply plugin: "com.facebook.react"
+}
+
+def getExtOrDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties["JjRefresh_" + name]
+}
+
+def getExtOrIntegerDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["JjRefresh_" + name]).toInteger()
+}
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+  compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
 
-    defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 22
-        versionCode 1
-        versionName "1.0"
+  defaultConfig {
+    minSdkVersion getExtOrIntegerDefault("minSdkVersion")
+    targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
+    buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
+  }
+  buildTypes {
+    release {
+      minifyEnabled false
     }
-    lintOptions {
-        abortOnError false
-    }
+  }
+
+  lintOptions {
+    disable "GradleCompatible"
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+
 }
 
 repositories {
-    mavenCentral()
+  mavenCentral()
+  google()
 }
 
+
 dependencies {
-    compile 'com.facebook.react:react-native:+'
+  // For < 0.71, this will be from the local maven repo
+  // For > 0.71, this will be replaced by `com.facebook.react:react-android:$version` by react gradle plugin
+  //noinspection GradleDynamicVersion
+  implementation "com.facebook.react:react-native"
 }
-  
+
+if (isNewArchitectureEnabled()) {
+  react {
+    jsRootDir = file("../src/")
+    libraryName = "JjRefresh"
+    codegenJavaPackageName = "com.jjrefresh"
+  }
+}
