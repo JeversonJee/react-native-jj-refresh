@@ -1,19 +1,38 @@
 import * as React from 'react';
-
-import { StyleSheet, View, Text } from 'react-native';
-import { multiply } from 'react-native-jj-refresh';
+import {
+  StyleSheet,
+  ScrollView,
+  Text,
+  View,
+  SafeAreaView,
+  Button,
+} from 'react-native';
+import { useRef } from 'react';
+import ActivitiesControl from './components/activitiesControl';
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
+  let activitiesControl = useRef();
 
-  React.useEffect(() => {
-    multiply(3, 7).then(setResult);
-  }, []);
-
+  const _finishRefresh = () => {
+    // @ts-ignore
+    activitiesControl.current && activitiesControl.current.finishRefresh();
+  };
   return (
-    <View style={styles.container}>
-      <Text>Result: {result}</Text>
-    </View>
+    <SafeAreaView>
+      <ScrollView
+        refreshControl={
+          // <RefreshControl refreshing={refreshing} onRefresh={_onRefreshing} />
+          <ActivitiesControl ref={activitiesControl} />
+        }
+      >
+        <View style={styles.container}>
+          <View style={styles.box}>
+            <Text>下拉刷新</Text>
+            <Button title="关闭刷新" onPress={_finishRefresh} />
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -24,8 +43,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   box: {
-    width: 60,
-    height: 60,
+    width: '100%',
+    height: 400,
+    backgroundColor: '#000',
     marginVertical: 20,
   },
 });

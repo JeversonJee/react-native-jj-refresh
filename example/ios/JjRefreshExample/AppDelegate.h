@@ -5,6 +5,5 @@
 
 @property (nonatomic, strong) UIWindow *window;
 
-@property (nonatomic, copy) RCTBubblingEventBlock onRefresh;
 
 @end

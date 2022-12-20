@@ -3,10 +3,9 @@
 //
 
 
-#import <Foundation/Foundation.h>
 #import <React/RCTDefines.h>
 #import <React/RCTUIManager.h>
-#import <React/RCTViewManager.h>
+#import <React/RCTLog.h>
 #import "RNTRefreshHeader.h"
 
 @interface JJRefreshViewManager : RCTViewManager<RNTRefreshHeaderDelegate>
@@ -17,13 +16,15 @@
     RNTRefreshHeader *_header;
 }
 
-RCT_EXPORT_MODULE()
+RCT_EXPORT_MODULE(RNTRefreshView)
 //  暴露属性
-RCT_EXPORT_VIEW_PROPERTY(onStateIdle, RCTBubblingEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(onStatePulling, RCTBubblingEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(onStateRefreshing, RCTBubblingEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(onStateWillRefresh, RCTBubblingEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(onStateNoMoreData, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onStateIdle, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onStatePulling, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onRefresh, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onStateWillRefresh, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onStateNoMoreData, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onPullingPercent, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(refreshing, BOOL)
 
 RCT_EXPORT_METHOD(endRefresh:(nonnull NSNumber *)reactTag) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
@@ -48,21 +49,19 @@ RCT_EXPORT_METHOD(beginRefresh:(nonnull NSNumber *)reactTag) {
 }
 
 - (UIView *)view {
-    _header = [RNTRefreshHeader headerWithRefreshingTarget:self refreshingAction:@selector(loadNewData)];
+    _header = [RNTRefreshHeader new];
     _header.delegate = self;
     return _header;
 }
-
+/**
+ *  @brief as we use the uikit
+ */
 + (BOOL)requiresMainQueueSetup {
     return true;
 }
 
-- (void)loadNewData {
-
-}
-
 #pragma mark - refreshHeaderDelegate
-- (void)refreshHederStateDidChanged:(MJRefreshState)state {
+- (void)refreshHeaderStateDidChanged:(MJRefreshState)state {
     if (!_header.reactTag) return;
     switch (state) {
         case MJRefreshStateIdle:
@@ -75,7 +74,7 @@ RCT_EXPORT_METHOD(beginRefresh:(nonnull NSNumber *)reactTag) {
             _header.onStateWillRefresh(@{@"target": _header.reactTag});
             break;
         case MJRefreshStateRefreshing:
-            _header.onStateRefreshing(@{@"target": _header.reactTag});
+            _header.onRefresh(@{@"target": _header.reactTag});
             break;
         case MJRefreshStateNoMoreData:
             _header.onStateNoMoreData(@{@"target": _header.reactTag});
@@ -86,6 +85,7 @@ RCT_EXPORT_METHOD(beginRefresh:(nonnull NSNumber *)reactTag) {
 }
 - (void)pullingPercentDidChanged:(CGFloat)pullingPercent {
     if (!_header.reactTag) return;
+    RCTLogInfo([NSString stringWithFormat:@"%@", @{@"target": _header.reactTag, @"percent": [NSNumber numberWithFloat:pullingPercent]}]);
     _header.onPullingPercent(@{@"target": _header.reactTag, @"percent": [NSNumber numberWithFloat:pullingPercent]});
 }
 @end
