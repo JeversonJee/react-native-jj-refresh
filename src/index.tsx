@@ -11,10 +11,7 @@ import type { IJJRefreshProps, IPullingPercent } from './const';
 
 const UnimplementedView = require('react-native/Libraries/Components/UnimplementedViews/UnimplementedView');
 
-const JJRefreshCtrl =
-  Platform.OS === 'ios'
-    ? requireNativeComponent('RNTRefreshView')
-    : UnimplementedView;
+const JJRefreshCtrl = requireNativeComponent('RNTRefreshView');
 
 const components: FC<IJJRefreshProps> = forwardRef((props, ref) => {
   let refreshRef = useRef(null);

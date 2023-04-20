@@ -79,7 +79,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
  */
 
 project.ext.react = [
-  enableHermes: true,  // clean and rebuild if changing
+  enableHermes: false,  // clean and rebuild if changing
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
@@ -252,7 +252,7 @@ dependencies {
   implementation fileTree(dir: "libs", include: ["*.jar"])
 
   //noinspection GradleDynamicVersion
-  implementation "com.facebook.react:react-native:+"  // From node_modules
+  implementation "com.facebook.react:react-native:0.68.3"  // From node_modules
 
   implementation 'androidx.appcompat:appcompat:1.0.0'                 //必须 1.0.0 以上
 
